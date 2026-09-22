@@ -23,7 +23,7 @@ alter_users_login_table(conn)
 #apply_user_theme(conn, st.session_state.get('username'))
 
 st.set_page_config(
-    page_title = "GoalPath",
+    page_title = "GoalPath AI",
     page_icon = "💡",
     layout = "wide"
     )
@@ -41,7 +41,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown("<h1 style='color:#2ED3C7;'>Welcome to GoalPath!</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#2ED3C7;'>welcome to GoalPath AI!</h1>", unsafe_allow_html=True)
 token = st.query_params.get("token")
 
 if token:
@@ -254,6 +254,4 @@ with auth_col:
         st.markdown("Already have an account?")
         if st.button("Log in", use_container_width=True):
             st.session_state['auth_view'] = 'login'
-            st.rerun()        
-
-
+            st.rerun()

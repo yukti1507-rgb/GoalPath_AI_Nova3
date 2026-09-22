@@ -1,15 +1,22 @@
 import streamlit as st
-
+from main import profile_icon
 from calculations.projections import run_full_simulation
 
-
+profile_icon()
 st.set_page_config(
     page_title="Your Dashboard",
     page_icon="📊", 
     layout="wide"
     )
 
-st.title("Your Financial Future")
+col1, col2= st.columns(2)
+
+with col1:
+    st.title("Your Financial Future")
+
+with col2: 
+    profile_icon()
+
 
 if "income" not in st.session_state:
     st.warning("Please fill in your details first.")

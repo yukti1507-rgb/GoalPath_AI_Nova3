@@ -18,8 +18,8 @@ with col2:
 st.caption("Answer what applies to you — you can skip sections that don't.")
 
 #input necessary for all users
-# st.subheader("💵 Income")
-# income = st.number_input("What's your monthly income?", min_value=0.0, step=100.0)
+st.subheader("💵 Income")
+income = st.number_input("What's your monthly income?", min_value=0.0, step=100.0)
 
 st.divider()
 
@@ -27,17 +27,11 @@ st.divider()
 st.subheader("🧾 Monthly Expenses")
 st.caption("Enter what applies to you. Leave a category at 0 if it doesn't apply — every monthly expense should be captured here.")
 
-st.markdown("**Food & groceries**")
-food_type = st.selectbox(
-    "Is this spending a need or a want?",
-    ["Need (e.g. groceries, home cooking)", "Want (e.g. takeout, snacks, treats)"],
-    key="food_type"
-)
-food = st.number_input("How much do you spend on this per month?", min_value=0.0, step=50.0, key="food_amount")
-food_is_need = food_type.startswith("Need")
-
+rent = st.number_input("Rent / housing / mortgage", min_value=0.0, step=50.0)
+food = st.number_input("Food & groceries", min_value=0.0, step=50.0)
 transport = st.number_input("Transport (fuel, bus, taxi, car payments)", min_value=0.0, step=50.0)
 utilities = st.number_input("Utilities & bills (electricity, water, phone, internet)", min_value=0.0, step=50.0)
+discretionary = st.number_input("Subscriptions, eating out, entertainment", min_value=0.0, step=50.0)
 other = st.number_input(
     "Other expenses",
     min_value=0.0,
@@ -45,7 +39,7 @@ other = st.number_input(
     help="Anything not covered above — e.g. insurance, clothing, gifts, medical, childcare, pet costs."
 )
 
-expenses = rent + food + transport + utilities + other
+expenses = rent + food + transport + utilities + discretionary + other
 
 col_e1, col_e2 = st.columns(2)
 with col_e1:
@@ -129,5 +123,3 @@ if st.button("Run my simulation", type="primary"):
 
     st.success("Got it! Heading to Dashboard to see your projection.")
     st.switch_page("pages/3_Dashboard.py")
-
-
