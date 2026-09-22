@@ -1,78 +1,160 @@
 import streamlit as st
 
-
 st.set_page_config(
-    page_title = "Your Finances",
-    page_icon = "💰",
-    layout = "wide"
+    page_title="Your Profile",
+    page_icon="👤",
+    layout="wide"
+)
+
+st.title("Your Profile")
+st.caption("Edit your details anytime — your dashboard updates automatically.")
+
+# ----------------------------------------------------------------
+# STEP 1: Set up default values in session_state (only runs once,
+# the first time this page ever loads — after that, session_state
+# already has these keys, so this block is skipped)
+# ----------------------------------------------------------------
+if "income" not in st.session_state:
+    st.session_state["income"] = 0.0
+if "expenses" not in st.session_state:
+    st.session_state["expenses"] = 0.0
+if "current_savings" not in st.session_state:
+    st.session_state["current_savings"] = 0.0
+if "monthly_savings" not in st.session_state:
+    st.session_state["monthly_savings"] = 0.0
+if "savings_rate" not in st.session_state:
+    st.session_state["savings_rate"] = 3.0
+if "goals" not in st.session_state:
+    st.session_state["goals"] = []  # empty list — no goals yet
+
+# ----------------------------------------------------------------
+# STEP 2: Income & Expenses — editable inputs
+# The `value=` parameter pre-fills the box with whatever is already
+# saved, so returning users see their existing numbers, not blanks.
+# Every time a value changes, we immediately write it back to
+# session_state — no "submit" button needed for this section.
+# ----------------------------------------------------------------
+st.subheader("💵 Income & Expenses")
+
+st.session_state["income"] = st.number_input(
+    "What's your monthly income?",
+    min_value=0.0, step=100.0,
+    value=st.session_state["income"]
+)
+
+st.session_state["expenses"] = st.number_input(
+    "Roughly how much do you spend per month on essentials?",
+    min_value=0.0, step=100.0,
+    value=st.session_state["expenses"]
+)
+
+st.divider()
+
+# ----------------------------------------------------------------
+# STEP 3: Savings — same editable pattern
+# ----------------------------------------------------------------
+st.subheader("🏦 Savings")
+
+st.session_state["current_savings"] = st.number_input(
+    "How much do you currently have saved?",
+    min_value=0.0, step=100.0,
+    value=st.session_state["current_savings"]
+)
+
+st.session_state["monthly_savings"] = st.number_input(
+    "How much would you like to save each month?",
+    min_value=0.0, step=100.0,
+    value=st.session_state["monthly_savings"]
+)
+
+st.session_state["savings_rate"] = st.slider(
+    "Expected annual interest rate on your savings (%)",
+    0.0, 10.0,
+    value=st.session_state["savings_rate"],
+    step=0.1
+)
+
+st.divider()
+
+# ----------------------------------------------------------------
+# STEP 4: Goals — this is the multi-goal section
+# st.session_state["goals"] is a LIST of dicts, e.g.:
+# [{"name": "Laptop", "amount": 45000, "years": 1}, ...]
+# ----------------------------------------------------------------
+st.subheader("🎯 Your Goals")
+
+# --- show each existing goal, editable, with a remove button ---
+# enumerate() gives us both the index (i) and the goal dict itself,
+# so we can update or delete the correct one in the list.
+for i, goal in enumerate(st.session_state["goals"]):
+
+    # each goal gets its own collapsible box, labelled with its name/amount
+    with st.expander(f"{goal['name']} — Rs {goal['amount']}"):
+
+        # NOTE: every widget here needs a UNIQUE key (using i).
+        # Without unique keys, Streamlit can't tell these text boxes
+        # apart from the ones in the next loop iteration, and it'll
+        # throw a duplicate-element error.
+        new_name = st.text_input(
+            "Goal name", value=goal["name"], key=f"goal_name_{i}"
+        )
+        new_amount = st.number_input(
+            "Amount needed (Rs)", value=goal["amount"],
+            min_value=0.0, step=500.0, key=f"goal_amount_{i}"
+        )
+        new_years = st.number_input(
+            "Years to achieve", value=goal["years"],
+            min_value=1, max_value=30, step=1, key=f"goal_years_{i}"
+        )
+
+        # write the (possibly edited) values straight back into the list
+        if new_amount <= 0:
+            st.warning("⚠️ Amount must be greater than 0 — this goal won't be included in calculations until fixed.")
+        else:
+            st.session_state["goals"][i] = {
+                "name": new_name,
+                "amount": new_amount,
+                "years": new_years
+            }
+
+        # remove button — deletes this goal and refreshes the page
+        if st.button("🗑️ Remove this goal", key=f"remove_goal_{i}"):
+            st.session_state["goals"].pop(i)
+            st.rerun()  # re-run the page so the removed goal disappears immediately
+
+st.write("")  # small spacing gap
+
+# --- form to add a brand new goal ---
+with st.expander("➕ Add a new goal"):
+    new_goal_name = st.text_input("What are you saving for?", key="new_goal_name_input")
+    new_goal_amount = st.number_input(
+        "How much do you need? (Rs)", min_value=0.0, step=500.0, key="new_goal_amount_input"
+    )
+    new_goal_years = st.number_input(
+        "By when? (years from now)", min_value=1, max_value=30, step=1, key="new_goal_years_input"
     )
 
-st.title("Can I afford my financial goals?")
-
-st.caption("Answer what applies to you — you can skip sections that don't.")
-
-#input necessary for all users
-st.subheader("💵 Income & Expenses")
-income = st.number_input("What's your monthly income?", min_value=0.0, step=100.0)
-expenses = st.number_input("Roughly how much do you spend per month on essentials (rent, food, transport, bills)?", min_value=0.0, step=100.0)
-
-st.divider()
-
-#how much the user is willing to save each month
-st.subheader("🏦 Savings")
-current_savings = st.number_input("How much do you currently have saved?", min_value=0.0, step=100.0)
-monthly_savings = st.number_input("How much would you like to save each month?", min_value=0.0, step=100.0)
-savings_rate = st.slider("Expected annual interest rate on your savings (%)", 0.0, 10.0, 3.0, step=0.1)
+    if st.button("Add goal", type="primary"):
+        if new_goal_name.strip() == "":
+            st.error("Please give your goal a name.")
+        elif new_goal_amount <= 0:
+            st.error("Goal amount must be greater than 0.")
+        else:
+            st.session_state["goals"].append({
+                "name": new_goal_name,
+                "amount": new_goal_amount,
+                "years": new_goal_years
+            })
+            st.success(f"Added '{new_goal_name}' to your goals!")
+            st.rerun()
 
 st.divider()
 
-#if the user has to repay a loan
-st.subheader("💳 Loan")
-has_loan = st.radio("Do you have a loan you're currently repaying?", ["No", "Yes"], horizontal=True)
-
-loan_amount = 0.0
-loan_rate = 0.0
-loan_term_years = 0
-
-if has_loan == "Yes":
-    loan_amount = st.number_input("How much did you borrow?", min_value=0.0, step=500.0)
-    loan_rate = st.slider("What's the interest rate (%)?", 0.0, 20.0, 9.0, step=0.1)
-    loan_term_years = st.number_input("Over how many years are you repaying it?", min_value=1, max_value=30, step=1)
-
-st.divider()
-
-#goal to be achieved by user by a specific time
-st.subheader("🎯 Savings Goal")
-has_goal = st.radio("Are you saving toward a specific goal?", ["No", "Yes"], horizontal=True)
-
-goal_name = ""
-goal_amount = 0.0
-goal_years = 0
-
-if has_goal == "Yes":
-    goal_name = st.text_input("What are you saving for? (e.g. Car, Emergency fund, Trip)")
-    goal_amount = st.number_input("How much do you need?", min_value=0.0, step=500.0)
-    goal_years = st.number_input("By when? (years from now)", min_value=1, max_value=30, step=1)
-
-st.divider()
-
-#saving session states
-if st.button("Run my simulation", type="primary"):
-    st.session_state["income"] = income
-    st.session_state["expenses"] = expenses
-    st.session_state["current_savings"] = current_savings
-    st.session_state["monthly_savings"] = monthly_savings
-    st.session_state["savings_rate"] = savings_rate
-
-    st.session_state["has_loan"] = has_loan == "Yes"
-    st.session_state["loan_amount"] = loan_amount
-    st.session_state["loan_rate"] = loan_rate
-    st.session_state["loan_term_years"] = loan_term_years
-
-    st.session_state["has_goal"] = has_goal == "Yes"
-    st.session_state["goal_name"] = goal_name
-    st.session_state["goal_amount"] = goal_amount
-    st.session_state["goal_years"] = goal_years
-
-    st.success("Got it! Heading to Dashboard to see your projection.")
+# ----------------------------------------------------------------
+# STEP 5: Link to the Dashboard
+# No "Run simulation" button needed anymore — everything above
+# already saved live into session_state as you typed. This button
+# just navigates you to see the results.
+# ----------------------------------------------------------------
+if st.button("📊 View my Dashboard", type="primary"):
     st.switch_page("pages/3_Dashboard.py")

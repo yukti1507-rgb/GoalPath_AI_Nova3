@@ -1,6 +1,6 @@
 from calculations.savings import project_savings
 from calculations.loans import amortisation_schedule
-from calculations.goals import will_reach_goal, required_monthly_contribution
+from calculations.goals import will_reach_goal, required_monthly_contribution, check_all_goals
 
 
 def run_full_simulation(user_data, months=60):
@@ -34,20 +34,16 @@ def run_full_simulation(user_data, months=60):
         }
 
     # Only run goal calculations if the user has a goal
-    if user_data.get("has_goal"):
-        goal_months = user_data["goal_years"] * 12
-        results["goal_status"] = will_reach_goal(
-            goal_amount=user_data["goal_amount"],
-            current_savings=user_data["current_savings"],
-            monthly_contribution=user_data["monthly_savings"],
-            annual_rate=user_data["savings_rate"],
-            months=goal_months
+    if user_data.get("goals"):
+        results["goals_status"] = check_all_goals(
+        results["savings_projection"], user_data["goals"]
+    )
+    results["required_monthly_per_goal"] = {
+        g["name"]: required_monthly_contribution(
+            g["amount"], user_data["current_savings"],
+            user_data["savings_rate"], g["years"] * 12
         )
-        results["required_monthly_for_goal"] = required_monthly_contribution(
-            goal_amount=user_data["goal_amount"],
-            current_savings=user_data["current_savings"],
-            annual_rate=user_data["savings_rate"],
-            months=goal_months
-        )
+        for g in user_data["goals"]
+    }
 
     return results
