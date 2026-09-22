@@ -1,5 +1,5 @@
 import streamlit as st
-
+from main import profile_icon
 
 st.set_page_config(
     page_title = "Your Finances",
@@ -7,14 +7,49 @@ st.set_page_config(
     layout = "wide"
     )
 
-st.title("Can I afford my financial goals?")
+col1, col2= st.columns([1,3])
+
+with col1:
+    st.title("Tell us about your finances")
+
+with col2:
+    profile_icon()
 
 st.caption("Answer what applies to you — you can skip sections that don't.")
 
 #input necessary for all users
-st.subheader("💵 Income & Expenses")
+st.subheader("💵 Income")
 income = st.number_input("What's your monthly income?", min_value=0.0, step=100.0)
-expenses = st.number_input("Roughly how much do you spend per month on essentials (rent, food, transport, bills)?", min_value=0.0, step=100.0)
+
+st.divider()
+
+#expenses broken down by category so "what if" scenarios have something to adjust
+st.subheader("🧾 Monthly Expenses")
+st.caption("Enter what applies to you. Leave a category at 0 if it doesn't apply — every monthly expense should be captured here.")
+
+rent = st.number_input("Rent / housing / mortgage", min_value=0.0, step=50.0)
+food = st.number_input("Food & groceries", min_value=0.0, step=50.0)
+transport = st.number_input("Transport (fuel, bus, taxi, car payments)", min_value=0.0, step=50.0)
+utilities = st.number_input("Utilities & bills (electricity, water, phone, internet)", min_value=0.0, step=50.0)
+discretionary = st.number_input("Subscriptions, eating out, entertainment", min_value=0.0, step=50.0)
+other = st.number_input(
+    "Other expenses",
+    min_value=0.0,
+    step=50.0,
+    help="Anything not covered above — e.g. insurance, clothing, gifts, medical, childcare, pet costs."
+)
+
+expenses = rent + food + transport + utilities + discretionary + other
+
+col_e1, col_e2 = st.columns(2)
+with col_e1:
+    st.metric("Total monthly expenses", f"{expenses:,.0f}")
+with col_e2:
+    available = income - expenses
+    st.metric("Available after expenses", f"{available:,.0f}")
+
+if income > 0 and expenses > income:
+    st.warning("⚠️ Your expenses currently exceed your income — there's nothing left over to save.")
 
 st.divider()
 
@@ -22,7 +57,11 @@ st.divider()
 st.subheader("🏦 Savings")
 current_savings = st.number_input("How much do you currently have saved?", min_value=0.0, step=100.0)
 monthly_savings = st.number_input("How much would you like to save each month?", min_value=0.0, step=100.0)
-savings_rate = st.slider("Expected annual interest rate on your savings (%)", 0.0, 10.0, 3.0, step=0.1)
+savings_rate = st.slider("Expected annual interest rate on your savings (%)", 0.0, 10.0, 3.0, step=0.1,
+                          help="The average return your savings account or investment earns per year.")
+
+if monthly_savings > available:
+    st.warning(f"⚠️ You're planning to save {monthly_savings:,.0f} but only have {available:,.0f} available after expenses.")
 
 st.divider()
 
@@ -59,7 +98,15 @@ st.divider()
 #saving session states
 if st.button("Run my simulation", type="primary"):
     st.session_state["income"] = income
+
+    st.session_state["rent"] = rent
+    st.session_state["food"] = food
+    st.session_state["transport"] = transport
+    st.session_state["utilities"] = utilities
+    st.session_state["discretionary"] = discretionary
+    st.session_state["other"] = other
     st.session_state["expenses"] = expenses
+
     st.session_state["current_savings"] = current_savings
     st.session_state["monthly_savings"] = monthly_savings
     st.session_state["savings_rate"] = savings_rate
@@ -76,3 +123,7 @@ if st.button("Run my simulation", type="primary"):
 
     st.success("Got it! Heading to Dashboard to see your projection.")
     st.switch_page("pages/3_Dashboard.py")
+
+
+#profile fixed expenses
+

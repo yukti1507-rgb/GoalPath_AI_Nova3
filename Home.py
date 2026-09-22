@@ -23,7 +23,7 @@ alter_users_login_table(conn)
 #apply_user_theme(conn, st.session_state.get('username'))
 
 st.set_page_config(
-    page_title = "Can I Afford My Financial ",
+    page_title = "GoalPath",
     page_icon = "💡",
     layout = "wide"
     )
@@ -41,7 +41,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown("<h1 style='color:#2ED3C7;'>Welcome to Future Me!</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#2ED3C7;'>Welcome to GoalPath!</h1>", unsafe_allow_html=True)
 token = st.query_params.get("token")
 
 if token:
