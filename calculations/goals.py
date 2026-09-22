@@ -35,3 +35,30 @@ def will_reach_goal(goal_amount, current_savings, monthly_contribution, annual_r
             return {"reached": True, "month_reached": entry["month"]}
 
     return {"reached": False, "month_reached": None}
+
+
+def check_all_goals(savings_history, goals):
+    """
+    Checks each goal against the same savings projection.
+    goals = [{"name": ..., "amount": ..., "years": ...}, ...]
+    """
+    results = []
+    for goal in goals:
+        goal_months = goal["years"] * 12
+        reached_month = None
+
+        for entry in savings_history:
+            if entry["month"] > goal_months:
+                break
+            if entry["balance"] >= goal["amount"]:
+                reached_month = entry["month"]
+                break
+
+        results.append({
+            "name": goal["name"],
+            "amount": goal["amount"],
+            "deadline_months": goal_months,
+            "reached": reached_month is not None,
+            "month_reached": reached_month
+        })
+    return results
