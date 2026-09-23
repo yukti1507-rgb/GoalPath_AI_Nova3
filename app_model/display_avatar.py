@@ -3,13 +3,22 @@ import sqlite3
 
 def display_avatar(conn, username):
     cur = conn.cursor()
+
     sql = 'SELECT avatar FROM users WHERE username = ?'
     param = (username,)
+
     cur.execute(sql, param)
-    chosen_avatar = cur.fetchone()[0]
+
+    result = cur.fetchone()
+
+    if result is None:
+        chosen_avatar = None
+    else:
+        chosen_avatar = result[0]
 
     if chosen_avatar:
-        st.logo(chosen_avatar, size = 'large')
+        st.logo(chosen_avatar, size="large")
     else:
-        st.logo("👤", size = 'large')
+        st.logo("👤", size="large")
+
     return chosen_avatar

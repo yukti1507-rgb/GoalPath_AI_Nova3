@@ -13,85 +13,7 @@ st.set_page_config(
     page_icon="👤", 
     layout="wide")
 
-
-st.caption(
-    "These are costs that stay roughly the same every month. "
-    "Edit any field and hit Save — anything you leave untouched keeps its last saved value."
-)
-
-# default values: use whatever was saved before, or 0.0 if this is the first visit
-defaults = {
-    "fixed_rent": 0.0,
-    "fixed_loan_repayment": 0.0,
-    "fixed_insurance": 0.0,
-    "fixed_utilities": 0.0,
-    "fixed_subscriptions": 0.0,
-    "fixed_school_childcare": 0.0,
-    "fixed_transport": 0.0,
-    "fixed_other": 0.0,
-}
-
-for key, val in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
-
-st.subheader("🏠 Housing & Loans")
-rent = st.number_input(
-    "Rent / mortgage", min_value=0.0, step=50.0,
-    value=st.session_state["fixed_rent"]
-)
-loan_repayment = st.number_input(
-    "Loan repayments (car, student, personal)", min_value=0.0, step=50.0,
-    value=st.session_state["fixed_loan_repayment"],
-    help="If this overlaps with a loan you entered on the Finances page, only enter it once."
-)
-
-st.subheader("🛡️ Insurance & Utilities")
-insurance = st.number_input(
-    "Insurance (health, car, life)", min_value=0.0, step=25.0,
-    value=st.session_state["fixed_insurance"]
-)
-utilities = st.number_input(
-    "Utilities base plan (internet, phone, electricity standing charge)", min_value=0.0, step=25.0,
-    value=st.session_state["fixed_utilities"]
-)
-
-st.subheader("📺 Recurring Commitments")
-subscriptions = st.number_input(
-    "Subscriptions (streaming, gym, software)", min_value=0.0, step=10.0,
-    value=st.session_state["fixed_subscriptions"]
-)
-school_childcare = st.number_input(
-    "School / childcare fees", min_value=0.0, step=50.0,
-    value=st.session_state["fixed_school_childcare"]
-)
-transport = st.number_input(
-    "Transport pass / lease (bus pass, car lease)", min_value=0.0, step=25.0,
-    value=st.session_state["fixed_transport"]
-)
-other = st.number_input(
-    "Other fixed costs", min_value=0.0, step=25.0,
-    value=st.session_state["fixed_other"],
-    help="Any other recurring cost that's the same amount every month."
-)
-
-submitted = st.button("Save changes", type="primary")
-
-if submitted:
-    st.session_state["fixed_rent"] = rent
-    st.session_state["fixed_loan_repayment"] = loan_repayment
-    st.session_state["fixed_insurance"] = insurance
-    st.session_state["fixed_utilities"] = utilities
-    st.session_state["fixed_subscriptions"] = subscriptions
-    st.session_state["fixed_school_childcare"] = school_childcare
-    st.session_state["fixed_transport"] = transport
-    st.session_state["fixed_other"] = other
-    st.success("Fixed expenses saved.")
-
-# total always reflects the last saved values, not unsaved edits still in the form
-total_fixed = sum(st.session_state[key] for key in defaults)
-st.divider()
-st.metric("Total fixed expenses (last saved)", f"{total_fixed:,.0f}")
+conn = get_connection()
 
 if 'Logged_in' not in st.session_state:
     st.session_state['Logged_in'] = False
@@ -106,11 +28,8 @@ if not st.session_state['Logged_in']:
 else:
     st.success("You are Logged in!")
 
-conn = get_connection()
-
 
 st.title(f"𓆉°❀⋆.ೃ࿔*:･･ Welcome to your Profile, {st.session_state.get('username','User')}! 𓆉°❀⋆.ೃ࿔*:･ ")
-
 
 st.divider()
 
@@ -174,8 +93,8 @@ with st.expander("Change Username"):
     
     if st.session_state.get("username_updated"):
         st.success("𓂃🪶 Username updated! 𓂃🪶")
-        st.session_state["username_updated"] = True
-        time.sleep(2)
+        st.session_state["username_updated"] = False   # reset so it only fires once
+        time.sleep(1.5)
         st.rerun()
 
 #change password using 2 step verification - asks for old password
