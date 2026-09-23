@@ -1,53 +1,40 @@
-from calculations.savings import project_savings
-from calculations.loans import amortisation_schedule
-from calculations.goals import will_reach_goal, required_monthly_contribution
-
-
-def run_full_simulation(user_data, months=60):
+def calculate_monthly_payment(principal, annual_rate, term_years):
     """
-    Takes the dictionary of user inputs (from session_state) and
-    returns a full results package: savings projection, loan schedule
-    (if applicable), and goal progress (if applicable).
+    Standard amortising loan formula.
     """
-    results = {}
+    monthly_rate = annual_rate / 100 / 12
+    n_months = term_years * 12
 
-    # Always run savings projection
-    results["savings_projection"] = project_savings(
-        starting_balance=user_data["current_savings"],
-        monthly_contribution=user_data["monthly_savings"],
-        annual_rate=user_data["savings_rate"],
-        months=months
-    )
+    if monthly_rate == 0:
+        return principal / n_months
 
-    # Only run loan calculations if the user has a loan
-    if user_data.get("has_loan"):
-        results["loan_schedule"] = amortisation_schedule(
-            principal=user_data["loan_amount"],
-            annual_rate=user_data["loan_rate"],
-            term_years=user_data["loan_term_years"]
-        )
-        total_paid = sum(m["payment"] for m in results["loan_schedule"])
-        total_interest = sum(m["interest_portion"] for m in results["loan_schedule"])
-        results["loan_summary"] = {
-            "total_paid": round(total_paid, 2),
-            "total_interest": round(total_interest, 2)
-        }
+    payment = principal * (monthly_rate * (1 + monthly_rate) ** n_months) / \
+              ((1 + monthly_rate) ** n_months - 1)
+    return round(payment, 2)
 
-    # Only run goal calculations if the user has a goal
-    if user_data.get("has_goal"):
-        goal_months = user_data["goal_years"] * 12
-        results["goal_status"] = will_reach_goal(
-            goal_amount=user_data["goal_amount"],
-            current_savings=user_data["current_savings"],
-            monthly_contribution=user_data["monthly_savings"],
-            annual_rate=user_data["savings_rate"],
-            months=goal_months
-        )
-        results["required_monthly_for_goal"] = required_monthly_contribution(
-            goal_amount=user_data["goal_amount"],
-            current_savings=user_data["current_savings"],
-            annual_rate=user_data["savings_rate"],
-            months=goal_months
-        )
 
-    return results
+def amortisation_schedule(principal, annual_rate, term_years):
+    """
+    Returns month-by-month breakdown of interest vs principal paid.
+    """
+    monthly_rate = annual_rate / 100 / 12
+    n_months = term_years * 12
+    monthly_payment = calculate_monthly_payment(principal, annual_rate, term_years)
+
+    balance = principal
+    schedule = []
+
+    for month in range(1, n_months + 1):
+        interest_portion = balance * monthly_rate
+        principal_portion = monthly_payment - interest_portion
+        balance = max(0, balance - principal_portion)
+
+        schedule.append({
+            "month": month,
+            "payment": monthly_payment,
+            "interest_portion": round(interest_portion, 2),
+            "principal_portion": round(principal_portion, 2),
+            "remaining_balance": round(balance, 2)
+        })
+
+    return schedule

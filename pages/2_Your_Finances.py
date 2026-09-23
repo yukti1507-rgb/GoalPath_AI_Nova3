@@ -131,5 +131,3 @@ if st.button("Run my simulation", type="primary"):
 
     st.success("Got it! Heading to Dashboard to see your projection.")
     st.switch_page("pages/3_Dashboard.py")
-
-

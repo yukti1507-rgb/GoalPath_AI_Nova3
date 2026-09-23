@@ -20,7 +20,13 @@ def create_user_profile(conn):
     avatar TEXT,
     background_color TEXT,
     role TEXT DEFAULT "user",
-    FOREIGN KEY (user_id) REFERENCES users_login(id));'''
+    FOREIGN KEY (user_id) REFERENCES user_login(id));'''
+    cur.execute(sql)
+    conn.commit()
+
+def delete_column(conn, column_name):
+    cur = conn.cursor()
+    sql = f'ALTER TABLE users DROP COLUMN {column_name}'
     cur.execute(sql)
     conn.commit()
 
@@ -35,10 +41,4 @@ def alter_users_login_table(conn):
 
     if 'last_login_time' not in existing_cols:
         cur.execute('ALTER TABLE users_login ADD COLUMN last_login_time TEXT')
-    conn.commit()
-
-def delete_column(conn, column_name):
-    cur = conn.cursor()
-    sql = f'ALTER TABLE users DROP COLUMN {column_name}'
-    cur.execute(sql)
     conn.commit()

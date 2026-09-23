@@ -27,8 +27,8 @@ def migrate_users(conn):
         users = f.readlines()
 
     for user in users:
-        name, hash, email = user.strip().split(",")
-        add_user(conn, name, hash, email) 
+        name, hash = user.strip().split(",")
+        add_user(conn, name, hash )
 
 #reading the entire db
 def get_all_users(conn):
@@ -76,7 +76,6 @@ def update_login_attempts(conn, name):
         cur.execute(sql, param)
         conn.commit()
         print("Account locked after 3 failed attempts.")
-
 #checks if the username is unique
 def is_username_available(conn, name):
     """Checks if the username already exists in the db"""
@@ -270,4 +269,3 @@ def get_login_stats(conn, name):
     if result:
         return {"lockout_count ": result[0], "last_login_time" : result[1]}
     return None
-
