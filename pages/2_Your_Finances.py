@@ -7,8 +7,6 @@ st.set_page_config(
     layout = "wide"
     )
 
-
-st.write("WHy arent you showing up ")
 col1, col2= st.columns([1,3])
 
 with col1:
